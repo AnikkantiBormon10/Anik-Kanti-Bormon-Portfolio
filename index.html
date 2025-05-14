@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anik Kanti Bormon | Portfolio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Basic Reset and Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Fira Code', monospace;
+            line-height: 1.6;
+            background-color: #1a1a1a; /* Dark background */
+            color: #00ff00; /* Neon green text */
+            overflow: hidden; /* Hide scrollbar initially */
+            /* Custom terminal cursor - using a simple block cursor SVG */
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><rect width="16" height="16" fill="%2300ff00"/></svg>') 0 0, auto;
+        }
+
+        a {
+            color: #00ffff; /* Neon blue links */
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #ffffff; /* White on hover */
+        }
+
+        /* Boot Screen Animation */
+        #boot-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            color: #00ff00;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.2rem;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .boot-line {
+            white-space: pre-wrap; /* Preserve whitespace */
+            overflow: hidden;
+            width: 0; /* Initial state for typing animation */
+            /* Animation properties will be set by JavaScript */
+        }
+
+        /* Top Panel (Kali Style) */
+        #top-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background-color: rgba(30, 30, 30, 0.9); /* Darker semi-transparent */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 0.9rem;
+            z-index: 1000;
+            border-bottom: 1px solid #00ffff; /* Neon blue border */
+        }
+
+        #top-panel .left-items,
+        #top-panel .right-items {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #top-panel .icon {
+            color: #00ffff; /* Neon blue icons */
+        }
+
+        #top-panel .menu-button {
+            cursor: pointer;
+            padding: 0 5px;
+            transition: color 0.3s ease;
+            position: relative; /* Needed for dropdown positioning */
+        }
+
+        #top-panel .menu-button:hover {
+            color: #ffffff;
+        }
+
+        /* Top Panel Dropdown Menu */
+        #top-panel-menu {
+            position: absolute;
+            top: 30px; /* Position below the top panel */
+            left: 0;
+            background-color: rgba(30, 30, 30, 0.95); /* Slightly more opaque */
+            border: 1px solid #00ffff;
+            border-top: none;
+            list-style: none;
+            padding: 10px 0;
+            min-width: 150px;
+            display: none; /* Hidden by default */
+            z-index: 1050; /* Above the top panel */
+        }
+
+        #top-panel-menu.visible {
+            display: block;
+        }
+
+        #top-panel-menu li {
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        #top-panel-menu li:hover {
+            background-color: #00ffff;
+            color: #000;
+        }
+
+
+        /* Desktop Area */
+        #desktop {
+            padding-top: 40px; /* Space for top panel */
+            min-height: calc(100vh - 60px); /* Full height minus panel/footer */
+            background-color: #1a1a1a; /* Dark background */
+            display: flex;
+            flex-direction: column; /* Arrange icons vertically */
+            align-items: flex-start; /* Align icons to the left */
+            padding-left: 20px; /* Add padding on the left */
+            position: relative; /* Needed for absolute positioning of photo */
+            overflow-y: auto; /* Allow scrolling if content exceeds viewport */
+            padding-bottom: 30px; /* Space for footer */
+        }
+
+        /* Desktop Background Photo */
+        #desktop-bg-photo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Cover the entire area */
+            opacity: 0.1; /* Adjust transparency as needed */
+            z-index: 0; /* Ensure it's in the background */
+            pointer-events: none; /* Allow clicks to pass through to icons */
+        }
+
+
+        /* Desktop Icons (Folders) */
+        .desktop-icon {
+            width: 100px;
+            height: 80px;
+            margin: 20px; /* Add margin around icons */
+            text-align: center;
+            cursor: pointer;
+            color: #00ff00; /* Neon green text */
+            transition: transform 0.2s ease, filter 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative; /* Needed for z-index to work */
+            z-index: 1; /* Ensure icons are above the background photo */
+        }
+
+        .desktop-icon:hover {
+            transform: translateY(-5px);
+            filter: brightness(1.5); /* Highlight on hover */
+        }
+
+        .desktop-icon i {
+            font-size: 3rem;
+            color: #00ffff; /* Neon blue folder icon */
+            margin-bottom: 5px;
+        }
+
+        /* Window/Modal Styling (Terminal Output) */
+        .window {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8); /* Initial state for animation */
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            background-color: #000; /* Black terminal background */
+            border: 2px solid #00ffff; /* Neon blue border */
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); /* Neon blue glow */
+            z-index: 2000;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            opacity: 0; /* Initial state for animation */
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            overflow: hidden; /* Hide content overflow during transition */
+        }
+
+        .window.open {
+            display: flex;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .window-title-bar {
+            background-color: #00ffff; /* Neon blue title bar */
+            color: #000;
+            padding: 8px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            cursor: grab; /* Indicate draggable */
+            flex-shrink: 0; /* Prevent title bar from shrinking */
+        }
+
+        .window-title-bar .close-button {
+            background: none;
+            border: none;
+            color: #000;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .window-title-bar .close-button:hover {
+            color: #ff0000; /* Red on hover */
+        }
+
+        .window-content {
+            padding: 15px;
+            overflow-y: auto; /* Scrollable content */
+            flex-grow: 1;
+            font-size: 1rem;
+            white-space: pre-wrap; /* Preserve formatting */
+            word-break: break-word; /* Break long words */
+            scrollbar-width: thin; /* Style scrollbar */
+            scrollbar-color: #00ffff #1a1a1a; /* Scrollbar color */
+        }
+
+         /* Custom scrollbar for Webkit browsers */
+        .window-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .window-content::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        .window-content::-webkit-scrollbar-thumb {
+            background-color: #00ffff;
+            border-radius: 4px;
+            border: 2px solid #1a1a1a;
+        }
+
+
+        .window-content h3 {
+             color: #00ff00; /* Neon green headings */
+             margin-bottom: 10px;
+             font-size: 1.3rem;
+             border-bottom: 1px dashed #00ff00;
+             padding-bottom: 5px;
+        }
+
+        .window-content p, .window-content ul {
+            margin-bottom: 15px;
+        }
+
+         .window-content ul {
+             list-style: none;
+             padding-left: 20px;
+         }
+
+         .window-content ul li::before {
+             content: "$ "; /* Terminal prompt like bullet */
+             color: #00ffff;
+         }
+
+        .window-content .prompt {
+            color: #00ffff; /* Neon blue prompt */
+        }
+
+        /* Contact Form Styling (Terminal Input) */
+        #contact-window .contact-form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #contact-window .contact-form label {
+            margin-bottom: 5px;
+            color: #00ff00; /* Neon green labels */
+        }
+
+        #contact-window .contact-form input,
+        #contact-window .contact-form textarea {
+            background-color: #222; /* Dark input background */
+            color: #00ff00; /* Neon green input text */
+            border: 1px dashed #00ff00; /* Neon green dashed border */
+            padding: 8px;
+            margin-bottom: 15px;
+            font-family: 'Fira Code', monospace;
+            font-size: 1rem;
+            resize: vertical;
+        }
+
+         #contact-window .contact-form input:focus,
+         #contact-window .contact-form textarea:focus {
+             outline: none;
+             border-color: #00ffff; /* Neon blue on focus */
+             box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+         }
+
+        #contact-window .contact-form button {
+            background-color: #00ffff; /* Neon blue button */
+            color: #000;
+            border: none;
+            padding: 10px 15px;
+            font-family: 'Fira Code', monospace;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        #contact-window .contact-form button:hover {
+            background-color: #ffffff; /* White on hover */
+            color: #000;
+        }
+
+        #contact-window .social-links {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        #contact-window .social-links a {
+            color: #00ffff; /* Neon blue social icons */
+            font-size: 2rem;
+            transition: color 0.3s ease;
+        }
+
+        #contact-window .social-links a:hover {
+            color: #ffffff; /* White on hover */
+        }
+
+        /* Terminal Window Specific Styles */
+        #terminal-window .window-content {
+            background-color: #000; /* Black background */
+            color: #00ff00; /* Neon green text */
+            display: flex;
+            flex-direction: column;
+        }
+
+        #terminal-output {
+            flex-grow: 1;
+            margin-bottom: 10px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+             scrollbar-width: thin; /* Style scrollbar */
+            scrollbar-color: #00ffff #000; /* Scrollbar color */
+        }
+
+         /* Custom scrollbar for Webkit browsers */
+        #terminal-output::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #terminal-output::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        #terminal-output::-webkit-scrollbar-thumb {
+            background-color: #00ffff;
+            border-radius: 4px;
+            border: 2px solid #000;
+        }
+
+
+        .terminal-line {
+            margin-bottom: 5px;
+        }
+
+        .terminal-line .prompt {
+            color: #00ffff; /* Neon blue prompt */
+        }
+
+         .terminal-line.error {
+             color: #ff0000; /* Red for errors */
+         }
+
+         .terminal-line.success {
+             color: #00ff00; /* Green for success */
+         }
+
+         .terminal-line.info {
+             color: #ffff00; /* Yellow for info */
+         }
+
+
+        #terminal-input-line {
+            display: flex;
+            align-items: center;
+        }
+
+        #terminal-input-line .prompt {
+             color: #00ffff; /* Neon blue prompt */
+             margin-right: 5px;
+        }
+
+        #terminal-input {
+            flex-grow: 1;
+            background: none;
+            border: none;
+            color: #00ff00; /* Neon green input text */
+            font-family: 'Fira Code', monospace;
+            font-size: 1rem;
+            outline: none; /* Remove default outline */
+            caret-color: #00ff00; /* Neon green cursor */
+        }
+
+
+        /* Footer (Terminal Command Line) */
+        #footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background-color: rgba(30, 30, 30, 0.9); /* Darker semi-transparent */
+            color: #00ff00; /* Neon green text */
+            padding: 0 10px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            border-top: 1px solid #00ffff; /* Neon blue border */
+            z-index: 1000;
+        }
+
+        #footer .prompt {
+            color: #00ffff; /* Neon blue prompt */
+            margin-right: 5px;
+        }
+
+        /* Overlay for modals */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black */
+            z-index: 1500;
+            display: none; /* Hidden by default */
+        }
+
+        .overlay.visible {
+            display: block;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            #top-panel {
+                font-size: 0.8rem;
+                height: 40px; /* Increase height for touch */
+            }
+
+            #desktop {
+                padding-top: 50px; /* Adjust padding */
+                align-items: center; /* Center icons on small screens */
+                padding-left: 0;
+            }
+
+            .desktop-icon {
+                margin: 15px;
+                width: 80px;
+                height: 70px;
+            }
+
+            .desktop-icon i {
+                font-size: 2.5rem;
+            }
+
+            .window {
+                width: 95%;
+            }
+
+            .window-content {
+                font-size: 0.9rem;
+            }
+
+            #footer {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="boot-screen">
+        <div class="boot-line">Initializing Kali Linux...</div>
+        <div class="boot-line">Checking file system... Done.</div>
+        <div class="boot-line">Loading kernel modules...</div>
+        <div class="boot-line">Starting network services...</div>
+        <div class="boot-line">Mounting file systems...</div>
+        <div class="boot-line">Starting graphical interface...</div>
+        <div class="boot-line">Welcome to Kali Linux!</div>
+        <div class="boot-line">root@anik:~# ./portfolio</div>
+    </div>
+
+    <div id="top-panel">
+        <div class="left-items">
+            <span class="menu-button" id="menu-button"><i class="fas fa-bars icon"></i> Menu
+                <ul id="top-panel-menu">
+                    <li data-target="about-window">About Me</li>
+                    <li data-target="projects-window">Projects</li>
+                    <li data-target="skills-window">Skills</li>
+                    <li data-target="contact-window">Contact</li>
+                    <li data-target="terminal-window">Terminal</li>
+                </ul>
+            </span>
+        </div>
+        <div class="right-items">
+            <span id="current-time"><i class="fas fa-clock icon"></i> 00:00</span>
+            <span><i class="fas fa-battery-full icon"></i> 100%</span> <span><i class="fas fa-wifi icon"></i> Wifi</span> </div>
+    </div>
+
+    <div id="desktop">
+        <img id="desktop-bg-photo" src="ANIK logo 2.png" alt="Desktop Background Photo"> <div class="desktop-icon" data-target="about-window">
+            <i class="fas fa-folder"></i>
+            <span>About Me</span>
+        </div>
+        <div class="desktop-icon" data-target="projects-window">
+            <i class="fas fa-folder"></i>
+            <span>Projects</span>
+        </div>
+        <div class="desktop-icon" data-target="skills-window">
+            <i class="fas fa-folder"></i>
+            <span>Skills</span>
+        </div>
+        <div class="desktop-icon" data-target="contact-window">
+            <i class="fas fa-folder"></i>
+            <span>Contact</span>
+        </div>
+         <div class="desktop-icon" data-target="terminal-window">
+            <i class="fas fa-terminal"></i>
+            <span>Terminal</span>
+        </div>
+    </div>
+
+    <div class="overlay"></div>
+
+    <div id="about-window" class="window">
+        <div class="window-title-bar">
+            <span>About Me</span>
+            <button class="close-button">&times;</button>
+        </div>
+        <div class="window-content">
+            <p><span class="prompt">root@anik:~#</span> cat about_me.txt</p>
+            <br>
+            <h3><a href="https://www.linkedin.com/in/anik-kanti-bormon-955737220/">Anik Kanti Bormon</a></h3>
+            <p>BSc in Computer Science and Engineering</p>
+            <p>Metropolitan University, Sylhet</p>
+            <br>
+            <h3>Interests:</h3>
+            <ul>
+                <li>Data Science/Analysis</li>
+                <li>Cybersecurity</li>
+                <li>Web Development</li>
+                <li>Machine Learning</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="skills-window" class="window">
+        <div class="window-title-bar">
+            <span>Skills</span>
+            <button class="close-button">&times;</button>
+        </div>
+        <div class="window-content">
+             <p><span class="prompt">root@anik:~#</span> cat skills.txt</p>
+             <br>
+             <h3>Programming Languages:</h3>
+             <ul>
+                 <li>Python</li>
+                 <li>SQL</li>
+                 <li>C</li>
+                 <li>C++</li>
+                 <li>Java</li>
+                 <li>JavaScript</li>
+                 <li>HTML</li>
+                 <li>CSS</li>
+             </ul>
+             <br>
+             <h3>Operating Systems:</h3>
+             <ul>
+                 <li>Windows</li>
+                 <li>Linux (Kali)</li>
+                 <li>macOS</li>
+             </ul>
+             <br>
+             <h3>Tools:</h3>
+             <ul>
+                 <li>Excel</li>
+                 <li>Google Colab/Jupyter Notebook</li>
+                 <li>VS Code</li>
+                 <li>Kaggle</li>
+                 <li>GitHub</li>
+                 <li>Cisco Packet Tracer</li>
+             </ul>
+        </div>
+    </div>
+
+    <div id="projects-window" class="window">
+        <div class="window-title-bar">
+            <span>Projects</span>
+            <button class="close-button">&times;</button>
+        </div>
+        <div class="window-content">
+            <p><span class="prompt">root@anik:~#</span> ls projects/</p>
+            <br>
+            <h3>Project 1: <a href="https://anikkantibormon10.github.io/Age-calculator/">Modern Age Calculator</a> </h3>
+            <p>Tech: Html, CSS, JavaScript </p>
+            <p>Description: A sleek, responsive web application that calculates a user's exact age in years, months, days, hours, minutes, and seconds based on their date of birth.</p>
+            <br>
+            <h3>Project 2: <a href="https://github.com/AnikkantiBormon10/chess_Game-with-python"> Chess Game </a></h3>
+            <p>Tech: Python</p>
+            <p>Description: "Chess_Game with Python" is a classic two-player chess application built using Python and Pygame. 
+                It features a fully interactive GUI, legal move validation, and smooth gameplay experience.</p>
+            <!-- <br>
+            <h3>Project 3: Network Packet Analyzer</h3>
+            <p>Tech: Python, Scapy</p>
+            <p>Description: Created a tool to capture and analyze network packets, identifying different protocols and extracting relevant information for security analysis.</p> -->
+            <br>
+            <h3>Project 3: <a href="https://anikkantibormon10.github.io/Free_style-Drow/">Simple Paint Web App</a></h3>
+            <p>Tech: Python, Scikit-learn, TensorFlow</p>
+            <p>Description: A browser-based drawing application inspired by Microsoft Paint, built with vanilla HTML, CSS, and JavaScript. Features include multiple brush colors, 
+                adjustable sizes, undo/redo functionality, and mobile support.</p>
+        </div>
+    </div>
+
+    <div id="contact-window" class="window">
+        <div class="window-title-bar">
+            <span>Contact</span>
+            <button class="close-button">&times;</button>
+        </div>
+        <div class="window-content">
+            <p><span class="prompt">root@anik:~#</span> G-mail -s "Inquiry" anikkantibormon@gmain.com</p>
+            <br>
+            <div class="contact-form">
+                <form action="#" method="post"> <label for="contact-name">Name:</label>
+                    <input type="text" id="contact-name" name="name" required>
+
+                    <label for="contact-email">Email:</label>
+                    <input type="email" id="contact-email" name="email" required>
+
+                    <label for="contact-message">Message:</label>
+                    <textarea id="contact-message" name="message" required></textarea>
+
+                    <button type="submit">Send Message</button>
+                </form>
+            </div>
+            <br>
+             <p><span class="prompt">root@anik:~#</span> social_links</p>
+             <div class="social-links">
+                <a href="https://www.linkedin.com/in/anik-kanti-bormon-955737220/" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="https://github.com/AnikkantiBormon10" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a> </div>
+        </div>
+    </div>
+
+    <div id="terminal-window" class="window">
+        <div class="window-title-bar">
+            <span>Terminal</span>
+            <button class="close-button">&times;</button>
+        </div>
+        <div class="window-content">
+            <div id="terminal-output">
+                <div class="terminal-line">Welcome to Anik's Portfolio Terminal. Type 'help' for commands.</div>
+            </div>
+            <div id="terminal-input-line">
+                <span class="prompt">root@anik:~#</span>
+                <input type="text" id="terminal-input" autofocus>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="footer">
+        <span class="prompt">root@anik:~#</span> <span id="current-year"></span> &copy; Amik Kamti Bormon
+    </div>
+
+    <audio id="boot-sound" src="1start.mp3" preload="auto"></audio> <audio id="click-sound" src="open-door-sound-247415.mp3" preload="auto"></audio>
+ <script>
+        // --- Dynamic Style Sheet for Animations ---
+        const dynamicStyleSheet = document.createElement('style');
+        document.head.appendChild(dynamicStyleSheet);
+
+
+        // --- Boot Animation ---
+        const bootScreen = document.getElementById('boot-screen');
+        const bootLines = bootScreen.querySelectorAll('.boot-line');
+        const bootSound = document.getElementById('boot-sound');
+
+        let delay = 0;
+        bootLines.forEach((line, index) => {
+            const text = line.textContent;
+            line.textContent = ''; // Clear text initially
+            const typingSpeed = 30; // Milliseconds per character
+            const typingDuration = text.length * typingSpeed;
+
+            // Create a dynamic keyframe rule for each line
+            const ruleName = `typing-boot-${index}`;
+            const rule = `@keyframes ${ruleName} { to { width: 100%; } }`;
+
+            // Insert rule into the dynamic stylesheet
+            try {
+                dynamicStyleSheet.sheet.insertRule(rule, dynamicStyleSheet.sheet.cssRules.length);
+            } catch (e) {
+                console.error("Failed to insert CSS rule:", e);
+            }
+
+
+            line.style.animationName = ruleName;
+            line.style.animationDuration = `${typingDuration}ms`;
+            line.style.animationTimingFunction = 'steps(1)';
+            line.style.animationFillMode = 'forwards';
+            line.style.animationDelay = `${delay}ms`;
+
+            delay += typingDuration + 100; // Add delay for the next line
+        });
+
+        // Hide boot screen after animation
+        setTimeout(() => {
+            bootScreen.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Re-enable scrolling after boot
+        }, delay + 500); // Add a small delay after the last line
+
+        // Play boot sound
+        window.addEventListener('load', () => {
+             // Check if sound is muted and if autoplay is allowed
+             bootSound.muted = true; // Start muted
+             bootSound.play().then(() => {
+                 bootSound.muted = false; // Unmute if successful
+             }).catch(error => {
+                 console.log("Autoplay prevented, sound will remain muted:", error);
+                 // Keep muted or show a button to unmute
+             });
+        });
+
+
+        // --- Top Panel Time ---
+        function updateTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('current-time').innerHTML = `<i class="fas fa-clock icon"></i> ${hours}:${minutes}`;
+        }
+        setInterval(updateTime, 1000);
+        updateTime(); // Initial call
+
+        // --- Window Management (Open/Close) ---
+        const windows = document.querySelectorAll('.window');
+        const closeButtons = document.querySelectorAll('.window .close-button');
+        const overlay = document.querySelector('.overlay');
+        const clickSound = document.getElementById('click-sound');
+
+        function openWindow(targetId) {
+             // Play click sound
+             clickSound.currentTime = 0; // Rewind to start
+             clickSound.muted = true; // Start muted
+             clickSound.play().then(() => {
+                 clickSound.muted = false; // Unmute if successful
+             }).catch(error => {
+                 console.log("Autoplay prevented for click sound:", error);
+             });
+
+            const targetWindow = document.getElementById(targetId);
+
+            // Close any currently open windows
+            windows.forEach(win => win.classList.remove('open'));
+
+            // Open the target window
+            targetWindow.classList.add('open');
+            overlay.classList.add('visible');
+
+            // If opening the terminal, focus the input
+            if (targetId === 'terminal-window') {
+                document.getElementById('terminal-input').focus();
+            }
+        }
+
+        function closeWindow(windowElement) {
+            windowElement.classList.remove('open');
+            overlay.classList.remove('visible');
+        }
+
+        // --- Desktop Icon Click to Open Window ---
+        const desktopIcons = document.querySelectorAll('.desktop-icon');
+        desktopIcons.forEach(icon => {
+            icon.addEventListener('click', () => {
+                const targetId = icon.getAttribute('data-target');
+                openWindow(targetId);
+            });
+        });
+
+        // --- Close Window ---
+        closeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                closeWindow(button.closest('.window'));
+            });
+        });
+
+        // Close window when clicking outside (on overlay)
+        overlay.addEventListener('click', () => {
+            windows.forEach(win => closeWindow(win));
+        });
+
+
+        // --- Footer Year ---
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // --- Basic Window Drag ---
+        // This implementation allows dragging the window by clicking and dragging the title bar.
+        windows.forEach(windowElement => {
+            const titleBar = windowElement.querySelector('.window-title-bar');
+            let isDragging = false;
+            let currentX;
+            let currentY;
+            let initialX;
+            let initialY;
+            let xOffset = 0;
+            let yOffset = 0;
+
+            titleBar.addEventListener("mousedown", dragStart);
+            titleBar.addEventListener("mouseup", dragEnd);
+            titleBar.addEventListener("mousemove", drag);
+
+             // Add touch event listeners for mobile
+            titleBar.addEventListener("touchstart", dragStart);
+            titleBar.addEventListener("touchend", dragEnd);
+            titleBar.addEventListener("touchmove", drag);
+
+
+            function dragStart(e) {
+                // Get the initial mouse or touch position
+                if (e.type === "touchstart") {
+                    initialX = e.touches[0].clientX - xOffset;
+                    initialY = e.touches[0].clientY - yOffset;
+                } else {
+                    initialX = e.clientX - xOffset;
+                    initialY = e.clientY - yOffset;
+                }
+
+                // Start dragging
+                isDragging = true;
+            }
+
+            function dragEnd(e) {
+                // Update the offset when dragging ends
+                initialX = currentX;
+                initialY = currentY;
+                isDragging = false;
+            }
+
+            function drag(e) {
+                if (isDragging) {
+                    // Prevent default behavior (like text selection or scrolling on touch)
+                    e.preventDefault();
+
+                    // Get the current mouse or touch position
+                    if (e.type === "touchmove") {
+                        currentX = e.touches[0].clientX - initialX;
+                        currentY = e.touches[0].clientY - initialY;
+                    } else {
+                        currentX = e.clientX - initialX;
+                        currentY = e.clientY - initialY;
+                    }
+
+                    // Update the offset
+                    xOffset = currentX;
+                    yOffset = currentY;
+
+                    // Apply the translation to the window element
+                    // We add the drag offset to the initial -50% translation for centering
+                    setTranslate(currentX, currentY, windowElement);
+                }
+            }
+
+            function setTranslate(xPos, yPos, el) {
+                 el.style.transform = `translate(calc(-50% + ${xPos}px), calc(-50% + ${yPos}px)) scale(1)`;
+            }
+
+             // Prevent dragging if clicking the close button or other interactive elements within the title bar
+            const interactiveElements = titleBar.querySelectorAll('button, a, span'); // Add other interactive elements if needed
+            interactiveElements.forEach(element => {
+                element.addEventListener('mousedown', (e) => e.stopPropagation());
+                 element.addEventListener('touchstart', (e) => e.stopPropagation());
+            });
+        });
+
+        // --- Terminal Functionality ---
+        const terminalInput = document.getElementById('terminal-input');
+        const terminalOutput = document.getElementById('terminal-output');
+
+        terminalInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent default form submission if input is in a form
+                const command = terminalInput.value.trim();
+                appendOutput(`<span class="prompt">root@anik:~#</span> ${command}`);
+                processCommand(command);
+                terminalInput.value = ''; // Clear input
+                terminalOutput.scrollTop = terminalOutput.scrollHeight; // Auto-scroll to bottom
+            }
+        });
+
+        function appendOutput(output) {
+            const line = document.createElement('div');
+            line.classList.add('terminal-line');
+            line.innerHTML = output; // Use innerHTML to allow for span tags
+            terminalOutput.appendChild(line);
+        }
+
+        function processCommand(command) {
+            const parts = command.toLowerCase().split(' ');
+            const mainCommand = parts[0];
+            const argument = parts[1];
+
+            switch (mainCommand) {
+                case 'help':
+                    appendOutput(`Available commands:`);
+                    appendOutput(`  ls, dir - List available sections`);
+                    appendOutput(`  cd, open, show &lt;section_name&gt; - Open a section (about, projects, skills, contact, terminal)`);
+                    appendOutput(`  clear, cls - Clear the terminal output`);
+                    appendOutput(`  help - Show this help message`);
+                    break;
+                case 'ls':
+                case 'dir':
+                    appendOutput(`Available sections: about projects skills contact terminal`);
+                    break;
+                case 'cd':
+                case 'open':
+                case 'show':
+                    if (argument) {
+                        const targetId = `${argument}-window`;
+                        const targetWindow = document.getElementById(targetId);
+                        if (targetWindow) {
+                            appendOutput(`Opening ${argument}...`);
+                            openWindow(targetId);
+                        } else {
+                            appendOutput(`Error: Section '${argument}' not found.`);
+                        }
+                    } else {
+                        appendOutput(`Usage: ${mainCommand} &lt;section_name&gt;`);
+                    }
+                    break;
+                case 'clear':
+                case 'cls':
+                    terminalOutput.innerHTML = ''; // Clear all output
+                    appendOutput(`<div class="terminal-line">Terminal cleared. Type 'help' for commands.</div>`);
+                    break;
+                case '':
+                    // Do nothing if command is empty
+                    break;
+                default:
+                    appendOutput(`Error: Command '${command}' not found. Type 'help' for commands.`);
+                    break;
+            }
+        }
+
+         // Initial message in terminal when opened
+        document.getElementById('terminal-window').addEventListener('transitionend', function() {
+            if (this.classList.contains('open')) {
+                terminalInput.focus(); // Ensure input is focused when window opens
+            }
+        });
+
+        // --- Top Panel Menu Functionality ---
+        const menuButton = document.getElementById('menu-button');
+        const topPanelMenu = document.getElementById('top-panel-menu');
+        const menuItems = topPanelMenu.querySelectorAll('li');
+
+        menuButton.addEventListener('click', (event) => {
+            event.stopPropagation(); // Prevent click from closing the menu immediately
+            topPanelMenu.classList.toggle('visible');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!menuButton.contains(event.target) && !topPanelMenu.contains(event.target)) {
+                topPanelMenu.classList.remove('visible');
+            }
+        });
+
+        // Add click listeners to menu items
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const targetId = item.getAttribute('data-target');
+                openWindow(targetId);
+                topPanelMenu.classList.remove('visible'); // Close menu after selection
+            });
+        });
+
+
+        // --- Footer Year ---
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // --- Basic Window Drag ---
+        // This implementation allows dragging the window by clicking and dragging the title bar.
+        windows.forEach(windowElement => {
+            const titleBar = windowElement.querySelector('.window-title-bar');
+            let isDragging = false;
+            let currentX;
+            let currentY;
+            let initialX;
+            let initialY;
+            let xOffset = 0;
+            let yOffset = 0;
+
+            titleBar.addEventListener("mousedown", dragStart);
+            titleBar.addEventListener("mouseup", dragEnd);
+            titleBar.addEventListener("mousemove", drag);
+
+             // Add touch event listeners for mobile
+            titleBar.addEventListener("touchstart", dragStart);
+            titleBar.addEventListener("touchend", dragEnd);
+            titlemove = (e) => {
+                 if (isDragging) {
+                    e.preventDefault(); // Prevent default behavior (like text selection or scrolling on touch)
+                    currentX = e.touches[0].clientX - initialX;
+                    currentY = e.touches[0].clientY - initialY;
+
+                    xOffset = currentX;
+                    yOffset = currentY;
+
+                    setTranslate(currentX, currentY, windowElement);
+                 }
+            };
+            titleBar.addEventListener("touchmove", titlemove);
+
+
+            function dragStart(e) {
+                // Get the initial mouse or touch position
+                if (e.type === "touchstart") {
+                    initialX = e.touches[0].clientX - xOffset;
+                    initialY = e.touches[0].clientY - yOffset;
+                } else {
+                    initialX = e.clientX - xOffset;
+                    initialY = e.clientY - yOffset;
+                }
+
+                // Start dragging
+                isDragging = true;
+            }
+
+            function dragEnd(e) {
+                // Update the offset when dragging ends
+                initialX = currentX;
+                initialY = currentY;
+                isDragging = false;
+            }
+
+            function drag(e) {
+                if (isDragging) {
+                    // Prevent default behavior (like text selection or scrolling on touch)
+                    e.preventDefault();
+
+                    // Get the current mouse or touch position
+                    if (e.type === "touchmove") {
+                        currentX = e.touches[0].clientX - initialX;
+                        currentY = e.touches[0].clientY - initialY;
+                    } else {
+                        currentX = e.clientX - initialX;
+                        currentY = e.clientY - initialY;
+                    }
+
+                    // Update the offset
+                    xOffset = currentX;
+                    yOffset = currentY;
+
+                    // Apply the translation to the window element
+                    // We add the drag offset to the initial -50% translation for centering
+                    setTranslate(currentX, currentY, windowElement);
+                }
+            }
+
+            function setTranslate(xPos, yPos, el) {
+                 el.style.transform = `translate(calc(-50% + ${xPos}px), calc(-50% + ${yPos}px)) scale(1)`;
+            }
+
+             // Prevent dragging if clicking the close button or other interactive elements within the title bar
+            const interactiveElements = titleBar.querySelectorAll('button, a, span'); // Add other interactive elements if needed
+            interactiveElements.forEach(element => {
+                element.addEventListener('mousedown', (e) => e.stopPropagation());
+                 element.addEventListener('touchstart', (e) => e.stopPropagation());
+            });
+        });
+
+
+    </script>
+
+</body>
+</html>
